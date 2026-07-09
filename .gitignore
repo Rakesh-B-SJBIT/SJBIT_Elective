@@ -2,31 +2,24 @@
 __pycache__/
 *.py[cod]
 
-# Virtual Environments
+# Virtual environments
 venv/
 myenv/
-env/
 .venv/
+env/
 
 # Django
 db.sqlite3
 *.log
-media/
 staticfiles/
+media/
 
-# Environment Variables
+# Environment
 .env
 
-# VS Code
+# IDE
 .vscode/
-
-# PyCharm
 .idea/
-
-# Build
-build/
-dist/
-*.egg-info/
 
 # OS
 .DS_Store
