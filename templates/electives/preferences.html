@@ -1,0 +1,186 @@
+{% extends "electives/base.html" %}
+{% load elective_filters %}
+{% block title %}My Preferences — SJBIT Electives{% endblock %}
+{% block n_prefs %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Preferences</h1>
+    <p class="page-sub">Drag to reorder · Max 5 preferences · Ranked from 1 (highest) to 5</p>
+  </div>
+  <a href="/catalog/" class="btn-primary-cvq"><i class="bi bi-plus-circle"></i> Add More</a>
+</div>
+
+<div class="prefs-layout">
+  <div class="prefs-main">
+    <div class="panel-box">
+      <div class="panel-header">
+        <h2><i class="bi bi-list-stars"></i> Preference List <span class="pref-count-badge" id="prefCountBadge">{{ prefs.count }}/5</span></h2>
+        {% if prefs.count > 1 %}
+        <button class="btn-save-order" id="btnSaveOrder" onclick="saveOrder()" style="display:none"><i class="bi bi-check2"></i> Save Order</button>
+        {% endif %}
+      </div>
+
+      {% if prefs %}
+      <ul class="pref-sortable" id="prefSortable">
+        {% for p in prefs %}
+        <li class="pref-item" data-id="{{ p.id }}" draggable="true">
+          <div class="pref-drag-handle"><i class="bi bi-grip-vertical"></i></div>
+          <div class="pref-rank-badge">{{ p.rank }}</div>
+          <div class="pref-color-dot" style="background:{{ p.course.card_color }}"></div>
+          <div class="pref-details">
+            <div class="pref-name"><a href="/courses/{{ p.course.code }}/">{{ p.course.title }}</a></div>
+            <div class="pref-meta-sm">
+              {{ p.course.code }} &nbsp;·&nbsp; {{ p.course.department.code }}
+              &nbsp;·&nbsp; {{ p.course.get_category_display }}
+              &nbsp;·&nbsp; {{ p.course.credits }} cr
+              &nbsp;·&nbsp; <span class="pref-seats-{{ p.course.id }}">{{ p.course.available_seats }} seats</span>
+            </div>
+          </div>
+          <div class="pref-status-badge pref-status-badge--{{ p.status }}">{{ p.status|title }}</div>
+          {% if p.status != 'allocated' %}
+          <button class="pref-remove-btn" onclick="removePreference({{ p.id }}, this)" title="Remove">
+            <i class="bi bi-trash3"></i>
+          </button>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="panel-empty">
+        <i class="bi bi-bookmark-x" style="font-size:3rem;color:var(--muted)"></i>
+        <h3>No preferences yet</h3>
+        <p>Browse the course catalog and add up to 5 electives you'd like to take.</p>
+        <a href="/catalog/" class="btn-primary-cvq mt-3"><i class="bi bi-grid-3x3-gap"></i> Explore Catalog</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Info box -->
+    <div class="info-box">
+      <h4><i class="bi bi-cpu"></i> How Allocation Works</h4>
+      <div class="info-steps">
+        <div class="is-row"><div class="is-dot" style="background:#2563eb">1</div><span>You will receive <strong>2 courses: 1 OPEN + 1 PROFESSIONAL</strong> elective.</span></div>
+        <div class="is-row"><div class="is-dot" style="background:#1e40af">2</div><span>Allocation is based on <strong>submission time (First-Come-First-Served)</strong>.</span></div>
+        <div class="is-row"><div class="is-dot" style="background:#059669">3</div><span>Students who submit earlier get priority for their choices.</span></div>
+        <div class="is-row"><div class="is-dot" style="background:#d97706">4</div><span>If all seats are taken, you are auto-added to the waitlist.</span></div>
+      </div>
+      
+      <!-- Validation Warning -->
+      {% if prefs.count > 0 %}
+      <div class="mt-3 p-3 rounded" style="background: #fef3c7; border: 1px solid #f59e0b;">
+        <h5 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: #92400e;">
+          <i class="bi bi-exclamation-triangle-fill" style="color: #f59e0b;"></i> Preference Requirements
+        </h5>
+        <p style="font-size: 0.85rem; margin: 0; color: #78350f;">
+          You must select at least <strong>1 OPEN elective</strong> and <strong>1 PROFESSIONAL elective</strong> from your 5 preferences.
+        </p>
+        <div class="mt-2" style="font-size: 0.85rem;">
+          <div style="color: {% if prefs|filter_by_category:'open'|length > 0 %}#059669{% else %}#dc2626{% endif %};">
+            <i class="bi bi-{% if prefs|filter_by_category:'open'|length > 0 %}check-circle-fill{% else %}x-circle-fill{% endif %}"></i>
+            OPEN electives: {{ prefs|filter_by_category:'open'|length }}
+          </div>
+          <div style="color: {% if prefs|filter_by_category:'professional'|length > 0 %}#059669{% else %}#dc2626{% endif %};">
+            <i class="bi bi-{% if prefs|filter_by_category:'professional'|length > 0 %}check-circle-fill{% else %}x-circle-fill{% endif %}"></i>
+            PROFESSIONAL electives: {{ prefs|filter_by_category:'professional'|length }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="prefs-sidebar">
+    <div class="panel-box">
+      <h3 style="margin-bottom:12px"><i class="bi bi-info-circle"></i> Submission Time</h3>
+      <div class="score-display">
+        <div class="score-big">{{ student.cgpa|floatformat:1 }}</div>
+        <div class="score-label">Your CGPA</div>
+      </div>
+      <p class="score-note" style="color:var(--accent);margin-top:12px;">Submit early to secure your preferred courses! Allocation is based on first-come-first-served.</p>
+    </div>
+
+    <div class="panel-box mt-3">
+      <h3 style="margin-bottom:12px"><i class="bi bi-shield-check"></i> Eligibility Rules</h3>
+      <ul class="elig-rules">
+        <li><i class="bi bi-check2-circle" style="color:#059669"></i> Must be in the correct semester</li>
+        <li><i class="bi bi-x-circle" style="color:#dc2626"></i> Cannot repeat a completed course</li>
+        <li><i class="bi bi-x-circle" style="color:#dc2626"></i> Cannot select a future-scheduled course</li>
+        <li><i class="bi bi-check2-circle" style="color:#059669"></i> Max 5 preferences allowed</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Drag-and-drop reorder
+let dragEl = null;
+const list = document.getElementById('prefSortable');
+if (list) {
+  list.querySelectorAll('.pref-item').forEach(item => {
+    item.addEventListener('dragstart', e => { dragEl = item; item.classList.add('dragging'); });
+    item.addEventListener('dragend', e => { item.classList.remove('dragging'); showSaveBtn(); });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      const after = getDragAfter(list, e.clientY);
+      if (after == null) list.appendChild(dragEl);
+      else list.insertBefore(dragEl, after);
+      updateRankBadges();
+    });
+  });
+}
+function getDragAfter(container, y) {
+  const items = [...container.querySelectorAll('.pref-item:not(.dragging)')];
+  return items.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset, element: child };
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+function updateRankBadges() {
+  list && list.querySelectorAll('.pref-item').forEach((item, i) => {
+    const badge = item.querySelector('.pref-rank-badge');
+    if (badge) badge.textContent = i + 1;
+  });
+}
+function showSaveBtn() {
+  const btn = document.getElementById('btnSaveOrder');
+  if (btn) btn.style.display = 'inline-flex';
+}
+function saveOrder() {
+  const order = [...list.querySelectorAll('.pref-item')].map(el => parseInt(el.dataset.id));
+  fetch('/preferences/reorder/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ order })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) {
+      const btn = document.getElementById('btnSaveOrder');
+      if (btn) { btn.innerHTML = '<i class="bi bi-check2-all"></i> Saved!'; setTimeout(() => { btn.innerHTML = '<i class="bi bi-check2"></i> Save Order'; btn.style.display='none'; }, 2000); }
+    }
+  });
+}
+function removePreference(prefId, btn) {
+  if (!confirm('Remove this preference?')) return;
+  btn.disabled = true;
+  fetch('/preferences/remove/' + prefId + '/', {
+    method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  }).then(r => r.json()).then(d => {
+    if (d.ok) {
+      btn.closest('.pref-item').remove();
+      updateRankBadges();
+      const badge = document.getElementById('prefCountBadge');
+      if (badge) {
+        const cur = parseInt(badge.textContent);
+        badge.textContent = (cur - 1) + '/5';
+      }
+    } else alert(d.msg);
+  });
+}
+function getCookie(n) { let v = document.cookie.match('(^|;) ?' + n + '=([^;]*)(;|$)'); return v ? v[2] : null; }
+</script>
+{% endblock %}

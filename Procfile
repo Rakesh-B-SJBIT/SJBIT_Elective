@@ -1,0 +1,1 @@
+web: gunicorn sjbit_elective.wsgi

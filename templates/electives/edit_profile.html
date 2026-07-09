@@ -1,0 +1,64 @@
+{% extends "electives/base.html" %}
+{% block title %}Edit Profile — SJB Institute of Technology{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title"><i class="bi bi-pencil-square"></i> Edit Profile</h1>
+  <p class="page-subtitle">Update your personal information</p>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="first_name" class="form-label">First Name *</label>
+              <input type="text" class="form-control" id="first_name" name="first_name" 
+                     value="{{ user.first_name }}" required>
+            </div>
+            <div class="col-md-6">
+              <label for="last_name" class="form-label">Last Name *</label>
+              <input type="text" class="form-control" id="last_name" name="last_name" 
+                     value="{{ user.last_name }}" required>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address *</label>
+            <input type="email" class="form-control" id="email" name="email" 
+                   value="{{ user.email }}" required>
+          </div>
+          
+          {% if student %}
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" class="form-control" id="phone" name="phone" 
+                   value="{{ student.phone }}" placeholder="+91 1234567890">
+            <small class="text-muted">Optional - Include country code</small>
+          </div>
+          {% endif %}
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> 
+            <strong>Note:</strong> Student ID, Department, Semester, and CGPA cannot be changed. 
+            Contact admin if you need to update these fields.
+          </div>
+          
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i> Save Changes
+            </button>
+            <a href="{% url 'profile' %}" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

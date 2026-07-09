@@ -1,0 +1,444 @@
+{% extends "electives/base.html" %}
+{% block title %}Dashboard — SJB Institute of Technology Bangalore – 560060 Elective Opt-In System{% endblock %}
+{% block n_dash %}active{% endblock %}
+
+{% block content %}
+<!-- Enhanced Header -->
+<div class="page-header mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <h1 class="page-title mb-2">Welcome back, {{ student.user.first_name }}!</h1>
+      <p class="page-subtitle mb-0">
+        <span class="badge bg-primary me-2">{{ student.student_id }}</span>
+        <span class="text-muted">{{ student.department.name }} • Semester {{ student.semester }} • CGPA {{ student.cgpa }}</span>
+      </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+      <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+        {% if confirmed %}
+        <a href="{% url 'download_allocation_pdf' %}" class="btn btn-success">
+          <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </a>
+        {% endif %}
+        <a href="/catalog/" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i> Browse Courses
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Stats Overview -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
+      <div class="card-body text-center p-4">
+        <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-block mb-3">
+          <i class="bi bi-bookmark-star text-primary" style="font-size: 1.5rem;"></i>
+        </div>
+        <h3 class="fw-bold text-primary mb-1">{{ prefs.count }}</h3>
+        <p class="text-muted mb-0 small">Preferences Submitted</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+      <div class="card-body text-center p-4">
+        <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-block mb-3">
+          <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
+        </div>
+        <h3 class="fw-bold text-success mb-1">{{ confirmed.count }}</h3>
+        <p class="text-muted mb-0 small">Courses Allocated</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+      <div class="card-body text-center p-4">
+        <div class="bg-warning bg-opacity-10 rounded-circle p-3 d-inline-block mb-3">
+          <i class="bi bi-clock-history text-warning" style="font-size: 1.5rem;"></i>
+        </div>
+        <h3 class="fw-bold text-warning mb-1">{{ wl_entries.count }}</h3>
+        <p class="text-muted mb-0 small">Waitlisted</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);">
+      <div class="card-body text-center p-4">
+        <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-block mb-3">
+          <i class="bi bi-mortarboard text-info" style="font-size: 1.5rem;"></i>
+        </div>
+        <h3 class="fw-bold text-info mb-1">{{ student.semester }}</h3>
+        <p class="text-muted mb-0 small">Current Semester</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="row g-4">
+  <!-- My Preferences -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+      <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-4">
+        <div>
+          <h4 class="fw-bold mb-1">
+            <i class="bi bi-bookmark-star text-primary me-2"></i>My Preferences
+          </h4>
+          <p class="text-muted mb-0 small">Your ranked course selections</p>
+        </div>
+        <a href="/preferences/" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-gear"></i> Manage
+        </a>
+      </div>
+      <div class="card-body pt-0">
+        {% if prefs %}
+        <div class="preference-list">
+          {% for p in prefs %}
+          <div class="d-flex align-items-center p-3 mb-2 rounded" style="background: #f8fafc; border-left: 4px solid {% if p.status == 'allocated' %}#059669{% elif p.status == 'pending' %}#3b82f6{% else %}#6b7280{% endif %};">
+            
+            <div class="me-3">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                   style="width: 35px; height: 35px; font-weight: bold;">
+                {{ p.rank }}
+              </div>
+            </div>
+            
+            <div class="flex-grow-1">
+              <h6 class="mb-1 fw-semibold">
+                <a href="/courses/{{ p.course.code }}/" class="text-decoration-none text-dark">
+                  {{ p.course.title }}
+                </a>
+              </h6>
+              <p class="mb-0 text-muted small">
+                {{ p.course.code }} • {{ p.course.department.code }} • {{ p.course.credits }} credits
+              </p>
+            </div>
+            
+            <div class="ms-2">
+              <span class="badge {% if p.status == 'allocated' %}bg-success{% elif p.status == 'pending' %}bg-primary{% else %}bg-secondary{% endif %}">
+                {{ p.status|title }}
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+          <i class="bi bi-bookmark-plus text-muted" style="font-size: 3rem;"></i>
+          <h6 class="text-muted mt-3 mb-2">No preferences submitted yet</h6>
+          <p class="text-muted small mb-3">Start by browsing the course catalog</p>
+          <a href="/catalog/" class="btn btn-primary btn-sm">
+            <i class="bi bi-search"></i> Browse Courses
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Allocation Results -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+      <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-4">
+        <div>
+          <h4 class="fw-bold mb-1">
+            <i class="bi bi-award text-success me-2"></i>Allocation Results
+          </h4>
+          <p class="text-muted mb-0 small">Your confirmed course allocations (1 OPEN + 1 PROFESSIONAL)</p>
+        </div>
+        {% if confirmed %}
+        <a href="{% url 'download_allocation_pdf' %}" class="btn btn-outline-success btn-sm">
+          <i class="bi bi-file-earmark-pdf"></i> PDF
+        </a>
+        {% endif %}
+      </div>
+      <div class="card-body pt-0">
+        {% if allocs %}
+        <div class="list-group list-group-flush">
+          <!-- OPEN Elective Allocation -->
+          {% if open_allocation %}
+          <div class="list-group-item border-0 px-0 py-3">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <div class="bg-success bg-opacity-10 rounded-circle p-2">
+                  <i class="bi bi-check-circle-fill text-success" style="font-size: 1.2rem;"></i>
+                </div>
+              </div>
+              
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center mb-1">
+                  <h6 class="mb-0 fw-semibold me-2">
+                    <a href="/courses/{{ open_allocation.course.code }}/" class="text-decoration-none text-dark">
+                      {{ open_allocation.course.title }}
+                    </a>
+                  </h6>
+                  <span class="badge bg-info">OPEN Elective</span>
+                </div>
+                <p class="mb-0 text-muted small">
+                  {{ open_allocation.course.code }} • {{ open_allocation.course.credits }} credits • {{ open_allocation.course.department.code }}
+                  {% if open_allocation.allocated_at %} • Allocated {{ open_allocation.allocated_at|date:"M d, Y" }}{% endif %}
+                </p>
+                <p class="mb-0 text-success small mt-1">
+                  <i class="bi bi-check-circle"></i> From other department (as required)
+                </p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- PROFESSIONAL Elective Allocation -->
+          {% if professional_allocation %}
+          <div class="list-group-item border-0 px-0 py-3">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <div class="bg-success bg-opacity-10 rounded-circle p-2">
+                  <i class="bi bi-check-circle-fill text-success" style="font-size: 1.2rem;"></i>
+                </div>
+              </div>
+              
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center mb-1">
+                  <h6 class="mb-0 fw-semibold me-2">
+                    <a href="/courses/{{ professional_allocation.course.code }}/" class="text-decoration-none text-dark">
+                      {{ professional_allocation.course.title }}
+                    </a>
+                  </h6>
+                  <span class="badge bg-primary">PROFESSIONAL Elective</span>
+                </div>
+                <p class="mb-0 text-muted small">
+                  {{ professional_allocation.course.code }} • {{ professional_allocation.course.credits }} credits • {{ professional_allocation.course.department.code }}
+                  {% if professional_allocation.allocated_at %} • Allocated {{ professional_allocation.allocated_at|date:"M d, Y" }}{% endif %}
+                </p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Other allocations (waitlisted, etc.) -->
+          {% if waitlisted %}
+          <div class="alert alert-warning alert-dismissible fade show mt-3 mb-3" role="alert" style="border-radius: 10px;">
+            <div class="d-flex align-items-start">
+              <i class="bi bi-info-circle-fill me-2" style="font-size: 1.2rem;"></i>
+              <div>
+                <strong>Waitlisted Courses</strong>
+                <p class="mb-0 small mt-1">
+                  Some courses below are waitlisted because they were full. You're in the queue and will be automatically promoted if seats become available. Check the "Waitlist Positions" section below for details.
+                </p>
+              </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% endif %}
+          
+          {% for a in allocs %}
+            {% if a.status != 'confirmed' or a.course.category not in 'open,professional' %}
+            <div class="list-group-item border-0 px-0 py-3">
+              <div class="d-flex align-items-center">
+                <div class="me-3">
+                  {% if a.status == 'waitlisted' %}
+                  <div class="bg-warning bg-opacity-10 rounded-circle p-2">
+                    <i class="bi bi-clock-fill text-warning" style="font-size: 1.2rem;"></i>
+                  </div>
+                  {% else %}
+                  <div class="bg-danger bg-opacity-10 rounded-circle p-2">
+                    <i class="bi bi-x-circle-fill text-danger" style="font-size: 1.2rem;"></i>
+                  </div>
+                  {% endif %}
+                </div>
+                
+                <div class="flex-grow-1">
+                  <h6 class="mb-1 fw-semibold">
+                    <a href="/courses/{{ a.course.code }}/" class="text-decoration-none text-dark">
+                      {{ a.course.title }}
+                    </a>
+                  </h6>
+                  <p class="mb-0 text-muted small">
+                    {{ a.course.code }} • {{ a.course.credits }} credits
+                    {% if a.allocated_at %} • Allocated {{ a.allocated_at|date:"M d, Y" }}{% endif %}
+                  </p>
+                  {% if a.status == 'waitlisted' %}
+                  <p class="mb-0 mt-1">
+                    <small class="text-warning">
+                      <i class="bi bi-hourglass-split me-1"></i>
+                      Course was full - you're in the waitlist queue
+                    </small>
+                  </p>
+                  {% endif %}
+                </div>
+                
+                <div class="ms-2">
+                  <span class="badge {% if a.status == 'waitlisted' %}bg-warning{% else %}bg-danger{% endif %}">
+                    {{ a.status|title }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        
+        {% if confirmed %}
+        <div class="mt-3 p-3 rounded" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-trophy text-success me-2"></i>
+            <strong class="text-success">Total Credits Allocated: 
+              {{ total_credits }} credits
+            </strong>
+          </div>
+          {% if open_allocation and professional_allocation %}
+          <div class="mt-2 text-success small">
+            <i class="bi bi-check-circle"></i> You have received both required allocations: 1 OPEN + 1 PROFESSIONAL
+          </div>
+          {% elif open_allocation %}
+          <div class="mt-2 text-warning small">
+            <i class="bi bi-exclamation-circle"></i> Waiting for PROFESSIONAL elective allocation
+          </div>
+          {% elif professional_allocation %}
+          <div class="mt-2 text-warning small">
+            <i class="bi bi-exclamation-circle"></i> Waiting for OPEN elective allocation
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+          <i class="bi bi-hourglass-split text-muted" style="font-size: 3rem;"></i>
+          <h6 class="text-muted mt-3 mb-2">Allocation pending</h6>
+          <p class="text-muted small mb-0">Results will appear here after the admin runs the allocation process</p>
+          <p class="text-muted small">You will receive: 1 OPEN elective (from other department) + 1 PROFESSIONAL elective</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Waitlist Details -->
+{% if wl_entries %}
+<!-- Waitlist Information Banner -->
+<div class="alert alert-warning border-0 shadow-sm mt-4" style="border-radius: 15px; border-left: 4px solid #f59e0b !important;">
+  <div class="d-flex align-items-start">
+    <div class="me-3">
+      <i class="bi bi-info-circle-fill" style="font-size: 1.5rem;"></i>
+    </div>
+    <div class="flex-grow-1">
+      <h5 class="alert-heading fw-bold mb-2">
+        <i class="bi bi-hourglass-split me-2"></i>You're on the Waitlist
+      </h5>
+      <p class="mb-2">
+        You have been placed on the waitlist for <strong>{{ wl_entries.count }}</strong> course{{ wl_entries.count|pluralize }}.
+        This means the course{{ wl_entries.count|pluralize:" was,s were" }} full when your preference was processed.
+      </p>
+      <hr class="my-2">
+      <p class="mb-2"><strong>What happens next?</strong></p>
+      <ul class="mb-2 ps-3">
+        <li><strong>Automatic Promotion:</strong> If a seat becomes available (e.g., another student drops), you'll be automatically promoted based on your waitlist position.</li>
+        <li><strong>No Action Needed:</strong> You don't need to do anything - the system handles promotions automatically.</li>
+        <li><strong>Other Courses:</strong> You can still be allocated to other courses from your preference list.</li>
+        <li><strong>Check Position:</strong> Your waitlist position is shown below - lower numbers have higher priority.</li>
+      </ul>
+      <div class="alert alert-light border-0 mb-0 mt-2">
+        <small>
+          <i class="bi bi-lightbulb text-warning me-1"></i>
+          <strong>Tip:</strong> Keep checking your dashboard for updates. If you're promoted, your status will automatically change to "Confirmed".
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-3" style="border-radius: 15px;">
+  <div class="card-header bg-transparent border-0 p-4">
+    <h4 class="fw-bold mb-1">
+      <i class="bi bi-list-ol text-warning me-2"></i>Your Waitlist Positions
+    </h4>
+    <p class="text-muted mb-0 small">Lower position numbers have higher priority for promotion</p>
+  </div>
+  <div class="card-body pt-0">
+    <div class="row g-3">
+      {% for w in wl_entries %}
+      <div class="col-md-6">
+        <div class="card border-warning border-2" style="border-radius: 10px;">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                     style="width: 50px; height: 50px; font-size: 1.2rem;">
+                  #{{ w.position }}
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="mb-1 fw-semibold">{{ w.course.title }}</h6>
+                <p class="mb-0 text-muted small">
+                  {{ w.course.code }} • {{ w.course.credits }} credits
+                </p>
+                <p class="mb-0 text-muted small">
+                  <i class="bi bi-calendar-event me-1"></i>Added {{ w.added_at|date:"M d, Y" }}
+                </p>
+              </div>
+            </div>
+            <div class="mt-3 p-2 bg-warning bg-opacity-10 rounded">
+              <small class="d-flex align-items-center">
+                <i class="bi bi-arrow-repeat me-2 text-warning"></i>
+                <span class="text-dark">
+                  <strong>Auto-promotion enabled</strong> - You'll be notified when promoted
+                </span>
+              </small>
+            </div>
+            {% if w.position == 1 %}
+            <div class="mt-2 p-2 bg-success bg-opacity-10 rounded border border-success">
+              <small class="d-flex align-items-center text-success">
+                <i class="bi bi-star-fill me-2"></i>
+                <strong>Next in line!</strong> You're first to be promoted if a seat opens.
+              </small>
+            </div>
+            {% endif %}
+            <div class="mt-3 d-grid">
+              <button class="btn btn-outline-danger btn-sm" onclick="withdrawFromWaitlist({{ w.id }}, '{{ w.course.title }}')">
+                <i class="bi bi-x-circle me-1"></i>Withdraw from Waitlist
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+function withdrawFromWaitlist(waitlistId, courseTitle) {
+  if (!confirm(`Are you sure you want to withdraw from the waitlist for "${courseTitle}"?\n\nYou will lose your position and cannot rejoin the waitlist.`)) {
+    return;
+  }
+  
+  fetch(`/waitlist/withdraw/${waitlistId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.ok) {
+      alert(data.msg);
+      location.reload();
+    } else {
+      alert('Error: ' + data.msg);
+    }
+  })
+  .catch(error => {
+    alert('Error: ' + error);
+  });
+}
+</script>
+
+{% endblock %}

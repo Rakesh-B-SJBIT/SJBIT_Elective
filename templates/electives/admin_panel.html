@@ -1,0 +1,405 @@
+{% extends "electives/base.html" %}
+{% block title %}Admin Panel — SJB Institute of Technology Bangalore – 560060 Elective Opt-In System{% endblock %}
+{% block n_admin %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Admin Control Panel</h1>
+  <p class="page-subtitle">Run allocation engine · Override assignments · Export reports</p>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon primary">
+      <i class="bi bi-people"></i>
+    </div>
+    <div class="stat-number">{{ stats.students }}</div>
+    <div class="stat-label">Students</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon success">
+      <i class="bi bi-check-circle"></i>
+    </div>
+    <div class="stat-number">{{ stats.allocated }}</div>
+    <div class="stat-label">Allocated</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon warning">
+      <i class="bi bi-clock-history"></i>
+    </div>
+    <div class="stat-number">{{ stats.waitlisted }}</div>
+    <div class="stat-label">Waitlisted</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon info">
+      <i class="bi bi-bookmark-star"></i>
+    </div>
+    <div class="stat-number">{{ stats.preferences }}</div>
+    <div class="stat-label">Preferences</div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Allocation Engine -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="bi bi-cpu"></i> Allocation Engine
+        </h2>
+      </div>
+      <div class="card-body">
+        <p class="mb-4">Run the first-come-first-served allocation algorithm to allocate students to electives based on submission time.</p>
+        
+        <div class="d-flex gap-2 mb-4">
+          <button class="btn btn-primary" onclick="runAlloc(false)">
+            <i class="bi bi-play-fill"></i> Run Allocation
+          </button>
+          <button class="btn btn-warning" onclick="runAlloc(true)">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset & Re-run
+          </button>
+        </div>
+        
+        <div class="alert" id="engineResult" style="display:none"></div>
+        
+        <div class="mt-4">
+          <h4 class="text-muted mb-3" style="font-size: 0.9rem;">Recent Runs</h4>
+          {% for run in runs %}
+          <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+            <div>
+              <div class="fw-semibold">{{ run.run_at|date:"d M Y, g:i a" }}</div>
+              <div class="text-muted small">by {{ run.run_by }}</div>
+            </div>
+            <div class="d-flex gap-2">
+              <span class="badge badge-success">✓ {{ run.total_allocated }}</span>
+              <span class="badge badge-warning">⏳ {{ run.total_waitlisted }}</span>
+              <span class="badge badge-danger">✕ {{ run.total_rejected }}</span>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-muted text-center py-3">No runs yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Override -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="bi bi-shield-check"></i> Manual Override
+        </h2>
+      </div>
+      <div class="card-body">
+        <p class="mb-4">Force-allocate a specific student to a course regardless of seat availability.</p>
+        
+        <div class="form-group">
+          <label class="form-label">Student ID</label>
+          <input type="text" id="ovStudentId" class="form-control" placeholder="e.g. 1RV22CS001">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Course Code</label>
+          <input type="text" id="ovCourseCode" class="form-control" placeholder="e.g. 23CST501">
+        </div>
+        
+        <button class="btn btn-primary w-100" onclick="doOverride()">
+          <i class="bi bi-person-check"></i> Force Allocate
+        </button>
+        
+        <div class="alert mt-3" id="overrideResult" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Increase Seats & Auto-Promote -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="bi bi-plus-circle"></i> Increase Course Seats
+        </h2>
+      </div>
+      <div class="card-body">
+        <p class="mb-4">Increase seats for a course and automatically promote waitlisted students.</p>
+        
+        <div class="form-group">
+          <label class="form-label">Course Code</label>
+          <input type="text" id="seatCourseCode" class="form-control" placeholder="e.g. 23CST501">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">New Total Seats</label>
+          <input type="number" id="newSeats" class="form-control" placeholder="e.g. 70" min="1">
+          <small class="text-muted">Must be greater than current seat count</small>
+        </div>
+        
+        <button class="btn btn-success w-100" onclick="increaseSeats()">
+          <i class="bi bi-arrow-up-circle"></i> Increase Seats & Auto-Promote
+        </button>
+        
+        <div class="alert mt-3" id="seatResult" style="display:none"></div>
+        
+        <div class="mt-3 p-3 bg-info bg-opacity-10 rounded">
+          <small>
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Note:</strong> When seats are increased, waitlisted students will be automatically promoted in order. 
+            Students with category conflicts will be skipped.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Reports -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="bi bi-download"></i> Data Management
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <a href="/admin/csv-upload/" class="btn btn-primary w-100">
+              <i class="bi bi-upload"></i> Upload CSV Data
+            </a>
+          </div>
+          <div class="col-md-3">
+            <a href="{% url 'download_summary_pdf' %}" class="btn btn-success w-100">
+              <i class="bi bi-file-earmark-pdf"></i> Download PDF Report
+            </a>
+          </div>
+          <div class="col-md-3">
+            <a href="/admin/export/?status=confirmed" class="btn btn-secondary w-100">
+              <i class="bi bi-file-earmark-check"></i> CSV Export
+            </a>
+          </div>
+          <div class="col-md-3">
+            <a href="/admin/diagnostic/" class="btn btn-info w-100">
+              <i class="bi bi-gear"></i> System Diagnostic
+            </a>
+          </div>
+          {% for dept in departments %}
+          <div class="col-md-3">
+            <a href="/admin/export/?department={{ dept.code }}" class="btn btn-sm btn-secondary w-100">
+              <i class="bi bi-building"></i> {{ dept.code }} Department
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Course Occupancy Dashboard -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i class="bi bi-table"></i> Course Occupancy Dashboard
+    </h2>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Title</th>
+            <th>Department</th>
+            <th>Category</th>
+            <th>Total Seats</th>
+            <th>Enrolled</th>
+            <th>Waitlist</th>
+            <th>Occupancy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in courses %}
+          <tr>
+            <td>
+              <a href="/courses/{{ c.code }}/" class="text-primary fw-semibold">{{ c.code }}</a>
+            </td>
+            <td>{{ c.title }}</td>
+            <td>
+              <span class="badge badge-primary">{{ c.department.code }}</span>
+            </td>
+            <td>{{ c.get_category_display }}</td>
+            <td>{{ c.total_seats }}</td>
+            <td>{{ c.conf }}</td>
+            <td>{{ c.wl }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress" style="width: 100px;">
+                  <div class="progress-bar {% if c.occupancy_pct >= 100 %}danger{% elif c.occupancy_pct >= 80 %}warning{% endif %}" 
+                       style="width: {{ c.occupancy_pct }}%"></div>
+                </div>
+                <span class="small">{{ c.occupancy_pct }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(n) {
+  let v = document.cookie.match('(^|;) ?' + n + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+
+function runAlloc(reset) {
+  const label = reset ? 'Reset & Re-run' : 'Run Allocation';
+  if (reset && !confirm('This will CLEAR all existing allocations and re-run. Continue?')) return;
+  
+  const btn = event.target;
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true; 
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Running…';
+  
+  const res = document.getElementById('engineResult');
+  res.style.display = 'none';
+  
+  fetch('/admin/run/', {
+    method: 'POST',
+    headers: { 
+      'X-CSRFToken': getCookie('csrftoken'), 
+      'Content-Type': 'application/x-www-form-urlencoded' 
+    },
+    body: 'reset=' + reset
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(d => {
+    btn.disabled = false; 
+    btn.innerHTML = originalHTML;
+    res.style.display = 'block';
+    res.className = 'alert alert-' + (d.ok ? 'success' : 'danger');
+    res.innerHTML = (d.ok ? '<i class="bi bi-check-circle-fill"></i> ' : '<i class="bi bi-x-circle-fill"></i> ') + d.msg;
+    if (d.ok) {
+      setTimeout(() => location.reload(), 2000);
+    }
+  })
+  .catch(error => {
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+    res.style.display = 'block';
+    res.className = 'alert alert-danger';
+    res.innerHTML = '<i class="bi bi-x-circle-fill"></i> Error: ' + error.message + '. Please check console for details.';
+    console.error('Allocation error:', error);
+  });
+}
+
+function doOverride() {
+  const sid = document.getElementById('ovStudentId').value.trim().toUpperCase();
+  const cid = document.getElementById('ovCourseCode').value.trim().toUpperCase();
+  
+  if (!sid || !cid) {
+    alert('Please enter both Student ID and Course Code.');
+    return;
+  }
+  
+  const res = document.getElementById('overrideResult');
+  res.style.display = 'none';
+  
+  fetch('/admin/override/', {
+    method: 'POST',
+    headers: { 
+      'X-CSRFToken': getCookie('csrftoken'), 
+      'Content-Type': 'application/x-www-form-urlencoded' 
+    },
+    body: 'student_id=' + encodeURIComponent(sid) + '&course_id=' + encodeURIComponent(cid)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(d => {
+    res.style.display = 'block';
+    res.className = 'alert alert-' + (d.ok ? 'success' : 'danger');
+    res.innerHTML = (d.ok ? '<i class="bi bi-check-circle-fill"></i> ' : '<i class="bi bi-x-circle-fill"></i> ') + d.msg;
+    
+    if (d.ok) {
+      // Clear form on success
+      document.getElementById('ovStudentId').value = '';
+      document.getElementById('ovCourseCode').value = '';
+      // Reload after 2 seconds to show updated data
+      setTimeout(() => location.reload(), 2000);
+    }
+  })
+  .catch(error => {
+    res.style.display = 'block';
+    res.className = 'alert alert-danger';
+    res.innerHTML = '<i class="bi bi-x-circle-fill"></i> Error: ' + error.message + '. Please check console for details.';
+    console.error('Override error:', error);
+  });
+}
+
+function increaseSeats() {
+  const courseCode = document.getElementById('seatCourseCode').value.trim().toUpperCase();
+  const newSeats = parseInt(document.getElementById('newSeats').value);
+  
+  if (!courseCode || !newSeats || newSeats <= 0) {
+    alert('Please enter both Course Code and valid seat count.');
+    return;
+  }
+  
+  if (!confirm(`Increase seats for ${courseCode} to ${newSeats}?\n\nWaitlisted students will be automatically promoted if eligible.`)) {
+    return;
+  }
+  
+  const res = document.getElementById('seatResult');
+  res.style.display = 'none';
+  
+  fetch('/admin/increase-seats/', {
+    method: 'POST',
+    headers: { 
+      'X-CSRFToken': getCookie('csrftoken'), 
+      'Content-Type': 'application/x-www-form-urlencoded' 
+    },
+    body: 'course_code=' + encodeURIComponent(courseCode) + '&new_seats=' + encodeURIComponent(newSeats)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(d => {
+    res.style.display = 'block';
+    res.className = 'alert alert-' + (d.ok ? 'success' : 'danger');
+    res.innerHTML = (d.ok ? '<i class="bi bi-check-circle-fill"></i> ' : '<i class="bi bi-x-circle-fill"></i> ') + d.msg;
+    
+    if (d.ok) {
+      // Clear form on success
+      document.getElementById('seatCourseCode').value = '';
+      document.getElementById('newSeats').value = '';
+      // Reload after 3 seconds to show updated data
+      setTimeout(() => location.reload(), 3000);
+    }
+  })
+  .catch(error => {
+    res.style.display = 'block';
+    res.className = 'alert alert-danger';
+    res.innerHTML = '<i class="bi bi-x-circle-fill"></i> Error: ' + error.message + '. Please check console for details.';
+    console.error('Seat increase error:', error);
+  });
+}
+</script>
+{% endblock %}

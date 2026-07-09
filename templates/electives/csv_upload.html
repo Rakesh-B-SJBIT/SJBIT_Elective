@@ -1,0 +1,390 @@
+{% extends "electives/base.html" %}
+{% block title %}CSV Data Upload — SJB Institute of Technology Bangalore – 560060 Elective Opt-In System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">CSV Data Upload</h1>
+  <p class="page-subtitle">Import departments, students, courses, and admin users from CSV files</p>
+</div>
+
+<div class="row g-4">
+  <!-- Upload Form -->
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="bi bi-upload"></i> Upload CSV File
+        </h2>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <div class="form-group">
+            <label class="form-label">{{ form.import_type.label }}</label>
+            {{ form.import_type }}
+            <div class="form-help">Select the type of data you want to import</div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">{{ form.csv_file.label }}</label>
+            {{ form.csv_file }}
+            {% if form.csv_file.help_text %}
+            <div class="form-help">{{ form.csv_file.help_text }}</div>
+            {% endif %}
+            {% if form.csv_file.errors %}
+            <div class="form-error">{{ form.csv_file.errors.0 }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Important:</strong> Import data in this order to avoid errors:
+            <ol class="mb-0 mt-2">
+              <li>Departments first</li>
+              <li>Admin Users</li>
+              <li>Students</li>
+              <li>Courses last</li>
+            </ol>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-upload"></i> Upload and Import
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- CSV Templates -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="bi bi-download"></i> CSV Templates
+        </h3>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-3">Download CSV template files to see the required format:</p>
+        
+        <div class="d-grid gap-2">
+          <a href="{% url 'download_sample' 'departments' %}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-file-earmark-text"></i> Departments Template
+          </a>
+          <a href="{% url 'download_sample' 'students' %}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-file-earmark-person"></i> Students Template
+          </a>
+          <a href="{% url 'download_sample' 'courses' %}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-file-earmark-code"></i> Courses Template
+          </a>
+          <a href="{% url 'download_sample' 'admins' %}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-file-earmark-lock"></i> Admin Users Template
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Data Management -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="bi bi-trash"></i> Data Management
+        </h3>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-3">Clear existing data before importing new data:</p>
+        
+        <div class="d-grid gap-2">
+          <button class="btn btn-sm btn-warning" onclick="clearData('preferences')">
+            <i class="bi bi-bookmark-x"></i> Clear Preferences
+          </button>
+          <button class="btn btn-sm btn-warning" onclick="clearData('allocations')">
+            <i class="bi bi-x-circle"></i> Clear Allocations
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="clearData('all')">
+            <i class="bi bi-exclamation-triangle"></i> Clear All Data
+          </button>
+        </div>
+        
+        <div class="alert alert-warning mt-3">
+          <i class="bi bi-exclamation-triangle"></i>
+          <strong>Warning:</strong> These actions cannot be undone. Make sure to backup your data first.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSV Format Guide -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i class="bi bi-table"></i> CSV Format Requirements
+    </h2>
+  </div>
+  <div class="card-body">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h4>Departments CSV</h4>
+        <div class="table-container">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Column</th>
+                <th>Required</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>code</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>CSE</td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>Computer Science & Engineering</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <h4>Students CSV</h4>
+        <div class="table-container">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Column</th>
+                <th>Required</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>student_id</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>1RV22CS001</td>
+              </tr>
+              <tr>
+                <td><code>first_name</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>John</td>
+              </tr>
+              <tr>
+                <td><code>last_name</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>Doe</td>
+              </tr>
+              <tr>
+                <td><code>email</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>john@sjbit.edu.in</td>
+              </tr>
+              <tr>
+                <td><code>department_code</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>CSE</td>
+              </tr>
+              <tr>
+                <td><code>semester</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>5</td>
+              </tr>
+              <tr>
+                <td><code>cgpa</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>8.75</td>
+              </tr>
+              <tr>
+                <td><code>password</code></td>
+                <td><span class="badge badge-success">No</span></td>
+                <td>student123</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <h4>Courses CSV</h4>
+        <div class="table-container">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Column</th>
+                <th>Required</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>code</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>23CST501</td>
+              </tr>
+              <tr>
+                <td><code>title</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>Machine Learning</td>
+              </tr>
+              <tr>
+                <td><code>description</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>Introduction to ML algorithms</td>
+              </tr>
+              <tr>
+                <td><code>department_code</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>CSE</td>
+              </tr>
+              <tr>
+                <td><code>category</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>professional</td>
+              </tr>
+              <tr>
+                <td><code>level</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>ug</td>
+              </tr>
+              <tr>
+                <td><code>credits</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>3</td>
+              </tr>
+              <tr>
+                <td><code>total_seats</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>60</td>
+              </tr>
+              <tr>
+                <td><code>for_semesters</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>5,6</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <h4>Admin Users CSV</h4>
+        <div class="table-container">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Column</th>
+                <th>Required</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>username</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>admin</td>
+              </tr>
+              <tr>
+                <td><code>email</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>admin@sjbit.edu.in</td>
+              </tr>
+              <tr>
+                <td><code>first_name</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>Admin</td>
+              </tr>
+              <tr>
+                <td><code>last_name</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>User</td>
+              </tr>
+              <tr>
+                <td><code>password</code></td>
+                <td><span class="badge badge-danger">Yes</span></td>
+                <td>admin123</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="alert alert-info mt-4">
+      <i class="bi bi-lightbulb"></i>
+      <strong>Tips:</strong>
+      <ul class="mb-0 mt-2">
+        <li>Save CSV files with UTF-8 encoding</li>
+        <li>Use comma (,) as the delimiter</li>
+        <li>Include column headers in the first row</li>
+        <li>Category must be: professional, open, or ability</li>
+        <li>Level must be: ug or pg</li>
+        <li>for_semesters format: "5,6" (comma-separated, no spaces)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function clearData(dataType) {
+  let confirmMessage = '';
+  
+  switch(dataType) {
+    case 'preferences':
+      confirmMessage = 'This will delete all student preferences. Continue?';
+      break;
+    case 'allocations':
+      confirmMessage = 'This will delete all allocations and waitlist entries. Continue?';
+      break;
+    case 'all':
+      confirmMessage = 'This will delete ALL data (students, courses, preferences, allocations) except admin users. This cannot be undone. Continue?';
+      break;
+  }
+  
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+  
+  fetch('/admin/clear-data/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken'),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'data_type=' + encodeURIComponent(dataType)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error clearing data. Please check console for details.');
+  });
+}
+</script>
+{% endblock %}

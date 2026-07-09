@@ -1,0 +1,14 @@
+code,title,description,department_code,category,level,credits,total_seats,for_semesters,instructor,prerequisites,job_perspectives
+23CST501,Machine Learning,Introduction to machine learning algorithms and applications,CSE,professional,intermediate,3,60,"5,6",[Upload Faculty Name],Python Programming;Statistics,ML Engineer;Data Scientist
+23CST502,Cloud Computing,Cloud infrastructure and services,CSE,professional,intermediate,3,50,"5,6",[Upload Faculty Name],Networking Basics;OS Fundamentals,Cloud Architect;DevOps Engineer
+23OET501,Digital Marketing,Marketing in the digital age,CSE,open,beginner,2,40,"5,6,7",[Upload Faculty Name],Basic Marketing Concepts,Digital Marketer;SEO Specialist
+23ECT501,IoT & Embedded Systems,Internet of Things and embedded systems design,ECE,professional,intermediate,4,50,"5,6",[Upload Faculty Name],C Programming;Microcontrollers,IoT Developer;Embedded Engineer
+23EEO611,Alternate Energy Sources,Study of renewable energy systems,EEE,open,intermediate,3,58,"6",Mr. Vijay Kumar K,,Energy Engineer;Sustainability Analyst
+23EEO614,Energy Conservation and Audit,Energy efficiency concepts,EEE,open,intermediate,3,59,"6",Mrs. Tarakeshwari V,,Energy Auditor;Power Consultant
+23CSO611,Introduction to Data Structures,Basics of data structures,CSE,open,beginner,3,29,"6",Mrs. Shreenagamajula Rani C,,Software Developer;Programmer
+23CSO612,Object-Oriented Programming with JAVA,OOP using Java,CSE,open,intermediate,3,49,"6",Mrs. Rajani,Basic Programming Knowledge,Java Developer;Backend Engineer
+23CDO612,Fundamentals of Operating Systems,OS concepts,"CSE(DS)",open,intermediate,3,21,"6",Mrs. Manasa B S,,System Engineer;OS Developer
+23CST501,Machine Learning,ML algorithms,CSE,professional,intermediate,3,60,"5,6",Dr. Faculty,Python Programming;Statistics,ML Engineer;Data Scientist
+23CST502,Cloud Computing,Cloud services,CSE,professional,intermediate,3,50,"5,6",Dr. Faculty,Networking Basics;OS Fundamentals,Cloud Architect;DevOps Engineer
+23OET501,Digital Marketing,Digital marketing,CSE,open,beginner,2,40,"5,6,7",Dr. Faculty,Basic Marketing,Digital Marketer;SEO Specialist
+23ECT501,IoT & Embedded Systems,IoT systems,ECE,professional,intermediate,4,50,"5,6",Dr. Faculty,C Programming;Microcontrollers,IoT Developer;Embedded Engineer

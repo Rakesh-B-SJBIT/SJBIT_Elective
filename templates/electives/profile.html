@@ -1,0 +1,270 @@
+{% extends "electives/base.html" %}
+{% block title %}My Profile — SJB Institute of Technology{% endblock %}
+{% block n_profile %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title"><i class="bi bi-person-circle"></i> My Profile</h1>
+  <p class="page-subtitle">View and manage your account information</p>
+</div>
+
+<!-- Profile Layout -->
+<div class="row g-4">
+  <!-- Left Sidebar - Profile Card -->
+  <div class="col-lg-4 col-md-5">
+    <div class="card border-0 shadow">
+      <div class="card-body text-center p-5">
+        <!-- Avatar - Same style as header avatar -->
+        <div class="user-avatar profile-avatar-large {% if user.is_staff %}admin-avatar{% else %}student-avatar{% endif %} mx-auto mb-4">
+          {% if user.is_staff %}
+          <i class="bi bi-shield-check"></i>
+          {% else %}
+          {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+          {% endif %}
+        </div>
+        
+        <!-- User Info -->
+        <h3 class="fw-bold mb-2" style="font-size: 1.5rem;">{{ user.get_full_name|default:user.username }}</h3>
+        {% if student %}
+        <p class="text-muted mb-1" style="font-size: 1rem;">{{ student.student_id }}</p>
+        <p class="text-primary fw-semibold mb-0" style="font-size: 1.1rem;">{{ student.department.name }}</p>
+        {% else %}
+        <p class="text-success fw-semibold mb-0" style="font-size: 1.1rem;"><i class="bi bi-shield-check me-1"></i>Administrator</p>
+        {% endif %}
+        
+        <hr class="my-4">
+        
+        <!-- Action Buttons -->
+        <div class="d-grid gap-3">
+          <a href="{% url 'edit_profile' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-pencil-square me-2"></i>Edit Profile
+          </a>
+          <a href="{% url 'change_password' %}" class="btn btn-outline-primary btn-lg">
+            <i class="bi bi-key me-2"></i>Change Password
+          </a>
+          <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-lg">
+            <i class="bi bi-box-arrow-right me-2"></i>Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Right Content Area -->
+  <div class="col-lg-8 col-md-7">
+    <!-- Personal Information Card -->
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header bg-gradient text-white py-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-person-circle me-2"></i>Personal Information</h5>
+      </div>
+      <div class="card-body p-4">
+        <table class="table table-borderless mb-0">
+          <tbody>
+            <tr>
+              <td class="text-muted fw-semibold" style="width: 35%; padding: 1rem 0;">Full Name</td>
+              <td class="fw-medium" style="padding: 1rem 0;">{{ user.get_full_name|default:"Not set" }}</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Email Address</td>
+              <td class="fw-medium" style="padding: 1rem 0;">{{ user.email|default:"Not set" }}</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Username</td>
+              <td class="fw-medium" style="padding: 1rem 0;">{{ user.username }}</td>
+            </tr>
+            {% if student %}
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Phone Number</td>
+              <td class="fw-medium" style="padding: 1rem 0;">{{ student.phone|default:"Not set" }}</td>
+            </tr>
+            {% endif %}
+            {% if user.is_staff %}
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Role</td>
+              <td class="fw-medium" style="padding: 1rem 0;"><span class="badge bg-success px-3 py-2">System Administrator</span></td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    {% if student %}
+    <!-- Academic Information Card (Students Only) -->
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header bg-gradient text-white py-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-mortarboard-fill me-2"></i>Academic Information</h5>
+      </div>
+      <div class="card-body p-4">
+        <table class="table table-borderless mb-0">
+          <tbody>
+            <tr>
+              <td class="text-muted fw-semibold" style="width: 35%; padding: 1rem 0;">Student ID</td>
+              <td class="fw-medium" style="padding: 1rem 0;">{{ student.student_id }}</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Department</td>
+              <td class="fw-medium" style="padding: 1rem 0;">{{ student.department.name }} <span class="badge bg-primary">{{ student.department.code }}</span></td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Current Semester</td>
+              <td class="fw-medium" style="padding: 1rem 0;">Semester {{ student.semester }}</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">CGPA</td>
+              <td class="fw-medium" style="padding: 1rem 0;">
+                <span class="badge bg-primary px-4 py-2" style="font-size: 1.1rem;">{{ student.cgpa }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Allocation Status Card (Students Only) -->
+    <div class="card border-0 shadow">
+      <div class="card-header bg-gradient text-white py-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Course Allocation Status</h5>
+      </div>
+      <div class="card-body p-4">
+        <!-- Stats Grid -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 2px solid #3b82f6;">
+              <div class="mb-2">
+                <i class="bi bi-book text-primary" style="font-size: 2rem;"></i>
+              </div>
+              <h2 class="text-primary mb-1 fw-bold" style="font-size: 2.5rem;">{{ open_count|default:0 }}</h2>
+              <p class="text-muted mb-0 fw-semibold" style="font-size: 0.85rem;">OPEN<br>Elective</p>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981;">
+              <div class="mb-2">
+                <i class="bi bi-briefcase text-success" style="font-size: 2rem;"></i>
+              </div>
+              <h2 class="text-success mb-1 fw-bold" style="font-size: 2.5rem;">{{ professional_count|default:0 }}</h2>
+              <p class="text-muted mb-0 fw-semibold" style="font-size: 0.85rem;">PROFESSIONAL<br>Elective</p>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b;">
+              <div class="mb-2">
+                <i class="bi bi-star text-warning" style="font-size: 2rem;"></i>
+              </div>
+              <h2 class="text-warning mb-1 fw-bold" style="font-size: 2.5rem;">{{ ability_count|default:0 }}</h2>
+              <p class="text-muted mb-0 fw-semibold" style="font-size: 0.85rem;">ABILITY<br>Enhancement</p>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border: 2px solid #0284c7;">
+              <div class="mb-2">
+                <i class="bi bi-award text-info" style="font-size: 2rem;"></i>
+              </div>
+              <h2 class="text-info mb-1 fw-bold" style="font-size: 2.5rem;">{{ total_credits|default:0 }}</h2>
+              <p class="text-muted mb-0 fw-semibold" style="font-size: 0.85rem;">Total<br>Credits</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+          <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-4">
+            <i class="bi bi-speedometer2 me-2"></i>View Dashboard
+          </a>
+          <a href="{% url 'my_preferences' %}" class="btn btn-success btn-lg px-4">
+            <i class="bi bi-bookmark-star me-2"></i>Manage Preferences
+          </a>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <!-- Admin Information Card (Admins Only) -->
+    <div class="card border-0 shadow mb-4">
+      <div class="card-header bg-gradient text-white py-3" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-shield-check me-2"></i>Administrator Information</h5>
+      </div>
+      <div class="card-body p-4">
+        <table class="table table-borderless mb-0">
+          <tbody>
+            <tr>
+              <td class="text-muted fw-semibold" style="width: 35%; padding: 1rem 0;">Account Type</td>
+              <td class="fw-medium" style="padding: 1rem 0;"><span class="badge bg-success px-3 py-2">System Administrator</span></td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Permissions</td>
+              <td class="fw-medium" style="padding: 1rem 0;">Full System Access</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td class="text-muted fw-semibold" style="padding: 1rem 0;">Status</td>
+              <td class="fw-medium" style="padding: 1rem 0;"><span class="badge bg-success">Active</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Admin Quick Actions Card -->
+    <div class="card border-0 shadow">
+      <div class="card-header bg-gradient text-white py-3" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-lightning-charge-fill me-2"></i>Quick Actions</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <a href="{% url 'admin_panel' %}" class="text-decoration-none">
+              <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 2px solid #3b82f6;">
+                <div class="mb-2">
+                  <i class="bi bi-shield-check text-primary" style="font-size: 2rem;"></i>
+                </div>
+                <p class="text-primary mb-0 fw-bold">Admin Panel</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="/admin/" class="text-decoration-none">
+              <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981;">
+                <div class="mb-2">
+                  <i class="bi bi-gear text-success" style="font-size: 2rem;"></i>
+                </div>
+                <p class="text-success mb-0 fw-bold">Django Admin</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="/admin/csv-upload/" class="text-decoration-none">
+              <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b;">
+                <div class="mb-2">
+                  <i class="bi bi-upload text-warning" style="font-size: 2rem;"></i>
+                </div>
+                <p class="text-warning mb-0 fw-bold">Upload CSV</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-6">
+            <a href="/admin/diagnostic/" class="text-decoration-none">
+              <div class="text-center p-4 rounded" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border: 2px solid #0284c7;">
+                <div class="mb-2">
+                  <i class="bi bi-activity text-info" style="font-size: 2rem;"></i>
+                </div>
+                <p class="text-info mb-0 fw-bold">Diagnostics</p>
+              </div>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+          <a href="{% url 'catalog' %}" class="btn btn-primary btn-lg px-4">
+            <i class="bi bi-grid-3x3-gap me-2"></i>View Courses
+          </a>
+          <a href="{% url 'admin_panel' %}" class="btn btn-success btn-lg px-4">
+            <i class="bi bi-people me-2"></i>Manage Students
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

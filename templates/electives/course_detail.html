@@ -1,0 +1,149 @@
+{% extends "electives/base.html" %}
+{% block title %}{{ course.title }} — SJBIT Electives{% endblock %}
+
+{% block content %}
+<div class="detail-hero" style="--dc:{{ course.card_color }}">
+  <div class="detail-hero-bg"></div>
+  <div class="detail-hero-content">
+    <div class="breadcrumb-cvq">
+      <a href="/catalog/">Catalog</a> <i class="bi bi-chevron-right"></i>
+      <a href="/catalog/?department={{ course.department.code }}">{{ course.department.code }}</a> <i class="bi bi-chevron-right"></i>
+      <span>{{ course.code }}</span>
+    </div>
+    <div class="detail-meta-top">
+      <span class="det-dept-badge" style="background:{{ course.card_color }}22;color:{{ course.card_color }};border:1px solid {{ course.card_color }}44">{{ course.department.name }}</span>
+      <span class="cc-badge cc-badge--{{ course.category }}">{{ course.get_category_display }}</span>
+      <span class="det-level-badge">{{ course.get_level_display }}</span>
+    </div>
+    <h1 class="detail-title">{{ course.title }}</h1>
+    <div class="detail-code">{{ course.code }} · {{ course.credits }} Credits{% if course.instructor %} · {{ course.instructor }}{% endif %}</div>
+
+    <!-- Real-time seat widget -->
+    <div class="seat-widget" id="seatWidget">
+      <div class="sw-bar-wrap">
+        <div class="sw-bar">
+          <div class="sw-fill" id="swFill" style="width:{{ course.occupancy_pct }}%;background:{{ course.card_color }}"></div>
+        </div>
+      </div>
+      <div class="sw-info">
+        <span class="sw-avail" id="swAvail">{{ course.available_seats }} seats available</span>
+        <span class="sw-total">of {{ course.total_seats }} total</span>
+        <span class="sw-dot" id="swDot"></span>
+        <span class="sw-status" id="swStatus">{{ course.seat_label|title }}</span>
+      </div>
+      {% if wl_count %}<div class="sw-wl"><i class="bi bi-clock-history"></i> {{ wl_count }} on waitlist</div>{% endif %}
+    </div>
+
+    <!-- Action -->
+    <div class="detail-actions" id="detailActions">
+      {% if user.is_authenticated %}
+        {% if in_prefs %}
+        <button class="btn-primary-cvq btn-added" disabled><i class="bi bi-check-circle-fill"></i> In Your Preferences</button>
+        {% elif not eligible %}
+        <button class="btn-disabled-cvq" disabled><i class="bi bi-slash-circle"></i> Not Eligible</button>
+        <div class="elig-reason"><i class="bi bi-info-circle"></i> {{ reason }}</div>
+        {% else %}
+        <button class="btn-primary-cvq" onclick="addThisPref({{ course.id }}, this)"><i class="bi bi-bookmark-plus"></i> Add to Preferences</button>
+        <a href="/preferences/" class="btn-ghost-cvq"><i class="bi bi-list-stars"></i> My Preferences</a>
+        {% endif %}
+      {% else %}
+      <a href="/login/?next=/courses/{{ course.code }}/" class="btn-primary-cvq"><i class="bi bi-person-circle"></i> Login to Enrol</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="detail-body">
+  <div class="detail-main">
+    <!-- Description -->
+    <div class="det-section">
+      <h2><i class="bi bi-file-text"></i> About This Course</h2>
+      <p>{{ course.description }}</p>
+    </div>
+
+    <!-- Career -->
+    {% if course.job_list %}
+    <div class="det-section">
+      <h2><i class="bi bi-briefcase"></i> Career Perspectives</h2>
+      <div class="job-chips-lg">
+        {% for job in course.job_list %}<div class="job-chip-lg" style="border-color:{{ course.card_color }}44"><i class="bi bi-arrow-right-circle" style="color:{{ course.card_color }}"></i> {{ job }}</div>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Prerequisites -->
+    {% if course.prereq_list %}
+    <div class="det-section">
+      <h2><i class="bi bi-stack"></i> Prerequisites</h2>
+      <ul class="prereq-list">
+        {% for p in course.prereq_list %}<li><i class="bi bi-check2-circle"></i> {{ p }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="detail-sidebar">
+    <div class="det-info-card">
+      <h3>Course Info</h3>
+      <div class="info-row"><span>Department</span><strong>{{ course.department.name }}</strong></div>
+      <div class="info-row"><span>Code</span><strong>{{ course.code }}</strong></div>
+      <div class="info-row"><span>Credits</span><strong>{{ course.credits }}</strong></div>
+      <div class="info-row"><span>Category</span><strong>{{ course.get_category_display }}</strong></div>
+      <div class="info-row"><span>Level</span><strong>{{ course.get_level_display }}</strong></div>
+      <div class="info-row"><span>Semesters</span><strong>{{ course.for_semesters }}</strong></div>
+      {% if course.instructor %}<div class="info-row"><span>Instructor</span><strong>{{ course.instructor }}</strong></div>{% endif %}
+      <div class="info-row"><span>Seats</span><strong id="sidebarSeats">{{ course.available_seats }} / {{ course.total_seats }}</strong></div>
+    </div>
+
+    {% if related %}
+    <div class="det-related">
+      <h3>Related Courses</h3>
+      {% for rc in related %}
+      <a href="/courses/{{ rc.code }}/" class="related-card">
+        <div class="rc-dot" style="background:{{ rc.card_color }}"></div>
+        <div><div class="rc-title">{{ rc.title }}</div><div class="rc-meta">{{ rc.code }} · {{ rc.available_seats }} seats</div></div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/ajax_seats.js"></script>
+<script>
+const courseId = {{ course.id }};
+function refreshSeats() {
+  fetch('/api/seats/' + courseId + '/')
+    .then(r => r.json()).then(d => {
+      document.getElementById('swAvail').textContent = d.available + ' seats available';
+      document.getElementById('swFill').style.width = d.pct + '%';
+      document.getElementById('sidebarSeats').textContent = d.available + ' / {{ course.total_seats }}';
+      const dot = document.getElementById('swDot');
+      const lbl = {'open':'🟢','filling':'🟡','almost_full':'🟠','full':'🔴'};
+      document.getElementById('swStatus').textContent = d.label.replace('_',' ');
+    });
+}
+refreshSeats();
+setInterval(refreshSeats, 15000);
+
+function addThisPref(cid, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Adding…';
+  fetch('/preferences/add/' + cid + '/', {
+    method: 'POST', headers: {'X-CSRFToken': getCookie('csrftoken')}
+  }).then(r=>r.json()).then(d=>{
+    if (d.ok) {
+      btn.className = 'btn-primary-cvq btn-added';
+      btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Added to Preferences';
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-bookmark-plus"></i> Add to Preferences';
+      alert(d.msg);
+    }
+  });
+}
+function getCookie(n){let v=document.cookie.match('(^|;) ?'+n+'=([^;]*)(;|$)');return v?v[2]:null;}
+</script>
+{% endblock %}

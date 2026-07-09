@@ -1,0 +1,262 @@
+{% extends "electives/base.html" %}
+{% block title %}SJB Institute of Technology Bangalore | Elective Opt-In System{% endblock %}
+{% block n_home %}active{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section py-5 mb-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <div class="mb-4">
+          <span class="badge bg-white bg-opacity-20 text-white px-3 py-2 mb-3">
+            <i class="bi bi-stars"></i> Fair First-Come-First-Served Allocation
+          </span>
+        </div>
+        <h1 class="display-4 fw-bold mb-4">Welcome to SJB Institute of Technology</h1>
+        <p class="lead mb-4 opacity-90">Elective Opt-In System - Fair, Transparent, and Efficient Course Selection Platform</p>
+        
+        <div class="d-flex flex-wrap gap-3 mb-5">
+          {% if user.is_authenticated %}
+          <a href="/catalog/" class="btn btn-light btn-lg px-4">
+            <i class="bi bi-grid-3x3-gap"></i> Browse Courses
+          </a>
+          <a href="/dashboard/" class="btn btn-outline-light btn-lg px-4">
+            <i class="bi bi-speedometer2"></i> My Dashboard
+          </a>
+          {% else %}
+          <a href="/register/" class="btn btn-light btn-lg px-4">
+            <i class="bi bi-person-plus"></i> Get Started
+          </a>
+          <a href="/catalog/" class="btn btn-outline-light btn-lg px-4">
+            <i class="bi bi-eye"></i> Explore Courses
+          </a>
+          {% endif %}
+        </div>
+        
+        <!-- Professional Stats Cards -->
+        <div class="row g-4">
+          <div class="col-6 col-md-3">
+            <div class="stats-card">
+              <h3 class="stat-number" style="color: #f97316 !important;">{{ stats.courses }}</h3>
+              <div class="stat-label" style="color: #f97316 !important;">Available Courses</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stats-card">
+              <h3 class="stat-number" style="color: #f97316 !important;">{{ stats.students }}</h3>
+              <div class="stat-label" style="color: #f97316 !important;">Registered Students</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stats-card">
+              <h3 class="stat-number" style="color: #f97316 !important;">{{ stats.depts }}</h3>
+              <div class="stat-label" style="color: #f97316 !important;">Departments</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stats-card">
+              <h3 class="stat-number" style="color: #f97316 !important;">{{ stats.allocations }}</h3>
+              <div class="stat-label" style="color: #f97316 !important;">Successful Allocations</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 text-center">
+        <div class="position-relative">
+          <div class="logo-hero-container">
+            <img src="/static/logo.png" alt="SJBIT Logo" class="logo-hero">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="container mb-5">
+  <div class="section-header">
+    <div class="section-badge">How It Works</div>
+    <h2>Fair Allocation in 4 Simple Steps</h2>
+    <p>Our transparent process ensures every student gets a fair chance</p>
+  </div>
+  
+  <div class="row g-4">
+    <div class="col-lg-3 col-md-6">
+      <div class="professional-card card-with-icon text-center h-100">
+        <div class="card-icon-wrapper">
+          <i class="bi bi-search"></i>
+        </div>
+        <div class="professional-card-body">
+          <div class="badge bg-primary text-white mb-3">Step 1</div>
+          <h5 class="fw-bold mb-3">Explore Courses</h5>
+          <p class="text-muted">Browse available elective courses across all departments with detailed information and career insights.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="professional-card card-with-icon text-center h-100">
+        <div class="card-icon-wrapper">
+          <i class="bi bi-bookmark-star"></i>
+        </div>
+        <div class="professional-card-body">
+          <div class="badge bg-success text-white mb-3">Step 2</div>
+          <h5 class="fw-bold mb-3">Set Preferences</h5>
+          <p class="text-muted">Submit up to 5 ranked course preferences based on your interests and career goals.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="professional-card card-with-icon text-center h-100">
+        <div class="card-icon-wrapper">
+          <i class="bi bi-cpu"></i>
+        </div>
+        <div class="professional-card-body">
+          <div class="badge bg-warning text-dark mb-3">Step 3</div>
+          <h5 class="fw-bold mb-3">Fair Allocation</h5>
+          <p class="text-muted">First-come-first-served allocation system ensures fair distribution based on submission time.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="professional-card card-with-icon text-center h-100">
+        <div class="card-icon-wrapper">
+          <i class="bi bi-award"></i>
+        </div>
+        <div class="professional-card-body">
+          <div class="badge bg-info text-white mb-3">Step 4</div>
+          <h5 class="fw-bold mb-3">Get Results</h5>
+          <p class="text-muted">View your allocation results and download professional PDF certificates.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="container mb-5">
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="professional-card h-100">
+        <div class="professional-card-header">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-white bg-opacity-20 rounded-circle p-2 me-3">
+              <i class="bi bi-grid-3x3-gap text-white" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold mb-1 text-white">Course Catalog</h4>
+              <p class="text-white-50 mb-0">Explore all available courses</p>
+            </div>
+          </div>
+        </div>
+        <div class="professional-card-body">
+          <p class="mb-4">Browse comprehensive course catalog with detailed descriptions, prerequisites, and real-time seat availability.</p>
+          <a href="/catalog/" class="btn btn-primary btn-lg">
+            <i class="bi bi-eye"></i> Browse Courses
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-6">
+      <div class="professional-card h-100">
+        <div class="professional-card-header gradient-bg-secondary">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-white bg-opacity-20 rounded-circle p-2 me-3">
+              <i class="bi bi-{% if user.is_authenticated %}speedometer2{% else %}person-plus{% endif %} text-white" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold mb-1 text-white">{% if user.is_authenticated %}Student Dashboard{% else %}Get Started{% endif %}</h4>
+              <p class="text-white-50 mb-0">{% if user.is_authenticated %}Manage your preferences{% else %}Create your account{% endif %}</p>
+            </div>
+          </div>
+        </div>
+        <div class="professional-card-body">
+          {% if user.is_authenticated %}
+          <p class="mb-4">Access your personalized dashboard to manage preferences, view allocation results, and download certificates.</p>
+          <a href="/dashboard/" class="btn btn-success btn-lg">
+            <i class="bi bi-speedometer2"></i> Go to Dashboard
+          </a>
+          {% else %}
+          <p class="mb-4">Create your account to start selecting elective courses and manage your academic preferences.</p>
+          <div class="d-flex gap-3">
+            <a href="/register/" class="btn btn-warning btn-lg">
+              <i class="bi bi-person-plus"></i> Register
+            </a>
+            <a href="/login/" class="btn btn-outline-dark">
+              <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Featured Courses Section -->
+{% if featured %}
+<div class="container mb-5">
+  <div class="section-header">
+    <div class="section-badge">Featured This Semester</div>
+    <h2>Popular Elective Courses</h2>
+    <p>Discover trending courses chosen by students</p>
+  </div>
+  
+  <div class="row g-4">
+    {% for c in featured %}
+    <div class="col-lg-4 col-md-6">
+      <div class="professional-card h-100">
+        <div class="professional-card-header" style="background: linear-gradient(135deg, 
+          {% if c.category == 'professional' %}var(--primary-blue), var(--dark-blue)
+          {% elif c.category == 'open' %}var(--success), #10b981
+          {% else %}var(--warning), #f59e0b{% endif %});">
+          
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-white bg-opacity-20 text-white">{{ c.department.code }}</span>
+            <span class="badge bg-white text-dark">{{ c.get_category_display }}</span>
+          </div>
+          <h6 class="mb-1 text-white-50">{{ c.code }}</h6>
+          <h5 class="fw-bold text-white mb-0">{{ c.title }}</h5>
+        </div>
+        
+        <div class="professional-card-body">
+          <p class="text-muted mb-3">{{ c.description|truncatechars:100 }}</p>
+          
+          <div class="row g-2 mb-3 text-center">
+            <div class="col-4">
+              <small class="text-muted d-block">Credits</small>
+              <strong class="text-primary">{{ c.credits }}</strong>
+            </div>
+            <div class="col-4">
+              <small class="text-muted d-block">Available</small>
+              <strong class="text-success">{{ c.available_seats }}</strong>
+            </div>
+            <div class="col-4">
+              <small class="text-muted d-block">Total</small>
+              <strong class="text-info">{{ c.total_seats }}</strong>
+            </div>
+          </div>
+          
+          <div class="progress mb-3" style="height: 6px;">
+            <div class="progress-bar {% if c.occupancy_pct >= 100 %}bg-danger{% elif c.occupancy_pct >= 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                 style="width: {{ c.occupancy_pct }}%"></div>
+          </div>
+        </div>
+        
+        <div class="professional-card-footer">
+          <a href="/courses/{{ c.code }}/" class="btn btn-outline-primary w-100">
+            <i class="bi bi-eye"></i> View Details
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

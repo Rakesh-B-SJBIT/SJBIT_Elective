@@ -1,0 +1,216 @@
+{% extends "electives/base.html" %}
+{% block title %}System Diagnostic — SJBIT Electives{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">System Diagnostic</h1>
+    <p class="page-subtitle">Check system status and troubleshoot issues</p>
+  </div>
+  <a href="/admin-panel/" class="btn-ghost-cvq"><i class="bi bi-arrow-left"></i> Back to Admin Panel</a>
+</div>
+
+<div class="dash-grid">
+  <!-- Database Status -->
+  <div class="panel-box">
+    <div class="panel-header"><h2><i class="bi bi-database"></i> Database Status</h2></div>
+    <div class="info-row">
+      <span>Connection</span>
+      <strong style="color:var(--success)">✓ Connected</strong>
+    </div>
+    <div class="info-row">
+      <span>Tables</span>
+      <strong>{{ diagnostics.database.tables|length }} tables</strong>
+    </div>
+  </div>
+
+  <!-- User Status -->
+  <div class="panel-box">
+    <div class="panel-header"><h2><i class="bi bi-person-badge"></i> User Status</h2></div>
+    <div class="info-row">
+      <span>Username</span>
+      <strong>{{ diagnostics.system.user_username }}</strong>
+    </div>
+    <div class="info-row">
+      <span>Is Staff</span>
+      <strong style="color:{% if diagnostics.system.user_is_staff %}var(--success){% else %}var(--danger){% endif %}">
+        {% if diagnostics.system.user_is_staff %}✓ Yes{% else %}✗ No{% endif %}
+      </strong>
+    </div>
+    <div class="info-row">
+      <span>Is Superuser</span>
+      <strong style="color:{% if diagnostics.system.user_is_superuser %}var(--success){% else %}var(--muted){% endif %}">
+        {% if diagnostics.system.user_is_superuser %}✓ Yes{% else %}✗ No{% endif %}
+      </strong>
+    </div>
+  </div>
+</div>
+
+<!-- Data Counts -->
+<div class="panel-box mt-4">
+  <div class="panel-header"><h2><i class="bi bi-bar-chart"></i> Data Counts</h2></div>
+  <div class="dash-stats">
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#2563eb22;color:#2563eb"><i class="bi bi-building"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.departments }}</div>
+      <div class="dstat-label">Departments</div>
+    </div>
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#2563eb22;color:#2563eb"><i class="bi bi-people"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.students }}</div>
+      <div class="dstat-label">Students</div>
+    </div>
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#2563eb22;color:#2563eb"><i class="bi bi-book"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.courses }}</div>
+      <div class="dstat-label">Total Courses</div>
+    </div>
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#059669 22;color:#059669"><i class="bi bi-check-circle"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.active_courses }}</div>
+      <div class="dstat-label">Active Courses</div>
+    </div>
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#2563eb22;color:#2563eb"><i class="bi bi-bookmark-star"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.preferences }}</div>
+      <div class="dstat-label">Total Preferences</div>
+    </div>
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#d9770622;color:#d97706"><i class="bi bi-clock"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.pending_preferences }}</div>
+      <div class="dstat-label">Pending Prefs</div>
+    </div>
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#05966922;color:#059669"><i class="bi bi-award"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.confirmed_allocations }}</div>
+      <div class="dstat-label">Confirmed</div>
+    </div>
+    <div class="dstat-card">
+      <div class="dstat-icon" style="background:#d9770622;color:#d97706"><i class="bi bi-hourglass"></i></div>
+      <div class="dstat-num">{{ diagnostics.counts.waitlist_entries }}</div>
+      <div class="dstat-label">Waitlisted</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="dash-grid mt-4">
+  <div class="panel-box">
+    <div class="panel-header"><h2><i class="bi bi-clock-history"></i> Last Allocation Run</h2></div>
+    {% if diagnostics.recent_activity.last_allocation_run %}
+    <div class="info-row">
+      <span>Run At</span>
+      <strong>{{ diagnostics.recent_activity.last_allocation_run.run_at|date:"d M Y, g:i a" }}</strong>
+    </div>
+    <div class="info-row">
+      <span>Run By</span>
+      <strong>{{ diagnostics.recent_activity.last_allocation_run.run_by }}</strong>
+    </div>
+    <div class="info-row">
+      <span>Allocated</span>
+      <strong style="color:var(--success)">{{ diagnostics.recent_activity.last_allocation_run.total_allocated }}</strong>
+    </div>
+    <div class="info-row">
+      <span>Waitlisted</span>
+      <strong style="color:var(--warning)">{{ diagnostics.recent_activity.last_allocation_run.total_waitlisted }}</strong>
+    </div>
+    <div class="info-row">
+      <span>Rejected</span>
+      <strong style="color:var(--danger)">{{ diagnostics.recent_activity.last_allocation_run.total_rejected }}</strong>
+    </div>
+    {% else %}
+    <div class="panel-empty-sm">No allocation runs yet</div>
+    {% endif %}
+  </div>
+
+  <div class="panel-box">
+    <div class="panel-header"><h2><i class="bi bi-activity"></i> System Health</h2></div>
+    <div class="info-row">
+      <span>Database</span>
+      <strong style="color:var(--success)">✓ Healthy</strong>
+    </div>
+    <div class="info-row">
+      <span>Active Courses</span>
+      <strong style="color:{% if diagnostics.counts.active_courses > 0 %}var(--success){% else %}var(--warning){% endif %}">
+        {% if diagnostics.counts.active_courses > 0 %}✓ Available{% else %}⚠ None{% endif %}
+      </strong>
+    </div>
+    <div class="info-row">
+      <span>Pending Preferences</span>
+      <strong style="color:{% if diagnostics.counts.pending_preferences > 0 %}var(--success){% else %}var(--muted){% endif %}">
+        {{ diagnostics.counts.pending_preferences }}
+      </strong>
+    </div>
+    <div class="info-row">
+      <span>Allocation Runs</span>
+      <strong>{{ diagnostics.counts.allocation_runs }} total</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Preferences -->
+<div class="panel-box mt-4">
+  <div class="panel-header"><h2><i class="bi bi-list-ul"></i> Recent Preferences (Last 5)</h2></div>
+  {% if diagnostics.recent_activity.recent_preferences %}
+  <div class="table-responsive">
+    <table class="cvq-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Course</th>
+          <th>Rank</th>
+          <th>Status</th>
+          <th>Submitted</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pref in diagnostics.recent_activity.recent_preferences %}
+        <tr>
+          <td>{{ pref.student.student_id }}</td>
+          <td>{{ pref.course.code }} - {{ pref.course.title|truncatechars:30 }}</td>
+          <td>{{ pref.rank }}</td>
+          <td>
+            <span class="pref-status pref-status--{{ pref.status }}">{{ pref.status|title }}</span>
+          </td>
+          <td>{{ pref.submitted_at|date:"d M Y, g:i a" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="panel-empty-sm">No preferences yet</div>
+  {% endif %}
+</div>
+
+<!-- Troubleshooting Tips -->
+<div class="panel-box mt-4">
+  <div class="panel-header"><h2><i class="bi bi-lightbulb"></i> Troubleshooting Tips</h2></div>
+  <div class="panel-desc">
+    <strong>If allocation is not working:</strong>
+    <ul style="margin-top:10px;padding-left:20px;line-height:1.8">
+      <li>Ensure there are pending preferences ({{ diagnostics.counts.pending_preferences }} currently)</li>
+      <li>Check that courses have available seats</li>
+      <li>Verify students are eligible for their selected courses</li>
+      <li>Check browser console (F12) for JavaScript errors</li>
+      <li>Check Django server console for Python errors</li>
+    </ul>
+    
+    <strong style="margin-top:15px;display:block">If manual override is not working:</strong>
+    <ul style="margin-top:10px;padding-left:20px;line-height:1.8">
+      <li>Use UPPERCASE for Student ID and Course Code</li>
+      <li>Verify the Student ID exists ({{ diagnostics.counts.students }} students in system)</li>
+      <li>Verify the Course Code exists ({{ diagnostics.counts.active_courses }} active courses)</li>
+      <li>Check that CSRF token is present in cookies</li>
+    </ul>
+    
+    <strong style="margin-top:15px;display:block">Quick Actions:</strong>
+    <ul style="margin-top:10px;padding-left:20px;line-height:1.8">
+      <li><a href="/admin-panel/" style="color:var(--accent)">Go to Admin Panel</a></li>
+      <li><a href="/catalog/" style="color:var(--accent)">View Course Catalog</a></li>
+      <li><a href="/admin/" style="color:var(--accent)">Django Admin Interface</a></li>
+    </ul>
+  </div>
+</div>
+
+{% endblock %}

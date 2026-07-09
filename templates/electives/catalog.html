@@ -1,0 +1,372 @@
+{% extends "electives/base.html" %}
+{% block title %}Course Catalog — SJB Institute of Technology Bangalore – 560060 Elective Opt-In System{% endblock %}
+{% block n_catalog %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Course Catalog</h1>
+  <p class="page-subtitle">Discover elective courses across all departments with real-time seat availability</p>
+</div>
+
+<!-- Allocation Guidance -->
+{% if user.is_authenticated and user.student %}
+<div class="alert alert-info mb-4">
+  <div class="d-flex">
+    <div class="me-3">
+      <i class="bi bi-info-circle-fill" style="font-size: 1.5rem;"></i>
+    </div>
+    <div>
+      <h6 class="alert-heading mb-2">Allocation Requirements</h6>
+      <p class="mb-2">Each student will receive <strong>TWO</strong> elective courses:</p>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card border-info mb-2">
+            <div class="card-body py-2">
+              <h6 class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> 1 OPEN Elective</h6>
+              <p class="mb-0 small text-muted">Must be from a department <strong>OTHER</strong> than your own ({{ user.student.department.code }})</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-primary mb-2">
+            <div class="card-body py-2">
+              <h6 class="mb-1"><i class="bi bi-check-circle text-success me-1"></i> 1 PROFESSIONAL Elective</h6>
+              <p class="mb-0 small text-muted">Can be from any department (including your own)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mt-2 mb-0 small"><strong>Important:</strong> Submit up to 5 preferences with <strong>at least 1 OPEN and 1 PROFESSIONAL</strong> elective. Allocation is based on First-Come-First-Served (submission time) and preference rank.</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Enhanced Filter Bar -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3" id="filterForm">
+      <div class="col-md-4">
+        <label class="form-label">Search Courses</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          {{ form.q }}
+        </div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Category</label>
+        {{ form.category }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Department</label>
+        {{ form.department }}
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Level</label>
+        {{ form.level }}
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <div class="form-check me-3">
+          {{ form.seats }}
+          <label class="form-check-label" for="{{ form.seats.id_for_label }}">
+            Available only
+          </label>
+        </div>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary me-2">
+          <i class="bi bi-funnel"></i> Apply Filters
+        </button>
+        <a href="/catalog/" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Clear All
+        </a>
+        <span class="ms-3 text-muted">
+          <i class="bi bi-info-circle"></i> {{ courses|length }} course{{ courses|length|pluralize }} found
+        </span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Enhanced Course Grid -->
+{% if courses %}
+<div class="row g-4" id="catalogGrid">
+  {% for c in courses %}
+  <div class="col-lg-4 col-md-6" data-course-id="{{ c.id }}">
+    <div class="card h-100 shadow-sm border-0 course-card-enhanced" style="border-radius: 15px; overflow: hidden; transition: all 0.3s ease;">
+      <!-- Course Header with Gradient -->
+      <div class="card-header border-0 text-white position-relative" style="background: linear-gradient(135deg, 
+        {% if c.category == 'professional' %}#1e40af, #3b82f6
+        {% elif c.category == 'open' %}#059669, #10b981
+        {% else %}#d97706, #f59e0b{% endif %}); padding: 1.5rem;">
+        
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge bg-white bg-opacity-20 text-white">{{ c.department.code }}</span>
+          <span class="badge bg-white text-dark">{{ c.get_category_display }}</span>
+        </div>
+        
+        <h6 class="card-subtitle mb-1 text-white-50">{{ c.code }}</h6>
+        <h5 class="card-title mb-0 text-white fw-bold">{{ c.title }}</h5>
+        
+        <!-- Decorative Element -->
+        <div class="position-absolute top-0 end-0 p-3">
+          <i class="bi bi-{% if c.category == 'professional' %}laptop{% elif c.category == 'open' %}globe{% else %}lightbulb{% endif %} opacity-25" style="font-size: 2rem;"></i>
+        </div>
+      </div>
+      
+      <!-- Course Body -->
+      <div class="card-body d-flex flex-column">
+        <p class="text-muted mb-3" style="font-size: 0.9rem; line-height: 1.5;">
+          {{ c.description|truncatechars:120 }}
+        </p>
+        
+        <!-- Course Meta Info -->
+        <div class="row g-2 mb-3 text-center">
+          <div class="col-4">
+            <div class="p-2 bg-light rounded">
+              <i class="bi bi-journal-bookmark text-primary d-block mb-1"></i>
+              <small class="fw-semibold">{{ c.credits }} Credits</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-light rounded">
+              <i class="bi bi-bar-chart text-success d-block mb-1"></i>
+              <small class="fw-semibold">{{ c.get_level_display }}</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-light rounded">
+              <i class="bi bi-people text-info d-block mb-1"></i>
+              <small class="fw-semibold">{{ c.total_seats }} Total</small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Job Perspectives -->
+        {% if c.job_perspectives %}
+        <div class="mb-3">
+          <small class="text-muted d-block mb-2">Career Opportunities:</small>
+          <div class="d-flex flex-wrap gap-1">
+            {% for job in c.job_list|slice:":3" %}
+            <span class="badge bg-light text-dark border">{{ job }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Seat Availability -->
+        <div class="mt-auto">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted">Seat Availability</small>
+            <small class="seat-available-{{ c.id }} fw-semibold 
+              {% if c.seat_label == 'full' %}text-danger{% elif c.seat_label == 'almost_full' %}text-warning{% else %}text-success{% endif %}">
+              {{ c.available_seats }} / {{ c.total_seats }} available
+            </small>
+          </div>
+          
+          <div class="progress mb-3" style="height: 8px;">
+            <div class="progress-bar seat-fill-{{ c.id }} 
+              {% if c.occupancy_pct >= 100 %}bg-danger
+              {% elif c.occupancy_pct >= 80 %}bg-warning
+              {% else %}bg-success{% endif %}" 
+              style="width: {{ c.occupancy_pct }}%"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Course Footer -->
+      <div class="card-footer bg-transparent border-0 pt-0">
+        <div class="d-grid gap-2">
+          <a href="/courses/{{ c.code }}/" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-eye"></i> View Details
+          </a>
+          
+          {% if user.is_authenticated %}
+            {% if c.id in my_pref_ids %}
+            <button class="btn btn-success btn-sm" disabled>
+              <i class="bi bi-check-circle-fill"></i> In Preferences
+            </button>
+            {% else %}
+            <button type="button" class="btn btn-primary btn-sm add-pref-btn" data-id="{{ c.id }}">
+              <i class="bi bi-plus-circle"></i> Add to Preferences
+            </button>
+            {% endif %}
+          {% else %}
+          <a href="/login/?next=/catalog/" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-person-circle"></i> Login to Add
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+  <div class="mb-4">
+    <i class="bi bi-search" style="font-size: 4rem; color: var(--gray);"></i>
+  </div>
+  <h3 class="text-muted">No courses match your filters</h3>
+  <p class="text-muted mb-4">Try adjusting your search criteria or clearing some filters.</p>
+  <a href="/catalog/" class="btn btn-primary">
+    <i class="bi bi-arrow-clockwise"></i> Reset Filters
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/ajax_seats.js"></script>
+<script>
+// Enhanced card hover effects
+document.addEventListener('DOMContentLoaded', function() {
+  var cards = document.querySelectorAll('.course-card-enhanced');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px)';
+      this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+    });
+    cards[i].addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '';
+    });
+  }
+});
+
+// Live seat updates every 20s
+var courseElements = document.querySelectorAll('[data-course-id]');
+var courseIds = [];
+for (var i = 0; i < courseElements.length; i++) {
+  courseIds.push(courseElements[i].dataset.courseId);
+}
+if (courseIds.length > 0) {
+  updateBulkSeats(courseIds);
+}
+setInterval(function() { 
+  if (courseIds.length > 0) {
+    updateBulkSeats(courseIds);
+  }
+}, 20000);
+
+// Auto-submit on filter change
+var filterSelects = document.querySelectorAll('#filterForm select');
+for (var i = 0; i < filterSelects.length; i++) {
+  filterSelects[i].addEventListener('change', function() { 
+    document.getElementById('filterForm').submit(); 
+  });
+}
+
+// Add event listeners to "Add to Preferences" buttons
+document.addEventListener('DOMContentLoaded', function() {
+  var addPrefButtons = document.querySelectorAll('.add-pref-btn');
+  console.log('Found ' + addPrefButtons.length + ' add preference buttons');
+  for (var i = 0; i < addPrefButtons.length; i++) {
+    addPrefButtons[i].addEventListener('click', function() {
+      var courseId = this.getAttribute('data-id');
+      console.log('Adding preference for course ID: ' + courseId);
+      addPref(courseId, this);
+    });
+  }
+});
+
+function addPref(courseId, btn) {
+  console.log('addPref called with courseId:', courseId);
+  var originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Adding...';
+  
+  var csrfToken = getCookie('csrftoken');
+  console.log('CSRF Token:', csrfToken);
+  var headers = {};
+  if (csrfToken) {
+    headers['X-CSRFToken'] = csrfToken;
+  }
+  
+  fetch('/preferences/add/' + courseId + '/', {
+    method: 'POST',
+    headers: headers
+  }).then(function(r) { 
+    console.log('Response status:', r.status);
+    return r.json(); 
+  }).then(function(d) {
+    console.log('Response data:', d);
+    if (d.ok) {
+      btn.className = 'btn btn-success btn-sm';
+      btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> In Preferences';
+      showToast(d.msg, 'success');
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+      showToast(d.msg, 'error');
+    }
+  }).catch(function(error) {
+    console.error('Error:', error);
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+    showToast('Error adding preference. Please try again.', 'error');
+  });
+}
+
+function getCookie(name) {
+  var cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function showToast(msg, type) {
+  // Create Bootstrap toast
+  var toastContainer = document.querySelector('.toast-container') || createToastContainer();
+  var toast = document.createElement('div');
+  var bgClass = type === 'success' ? 'success' : 'danger';
+  toast.className = 'toast align-items-center text-white bg-' + bgClass + ' border-0';
+  toast.setAttribute('role', 'alert');
+  
+  var iconClass = type === 'success' ? 'check-circle-fill' : 'x-circle-fill';
+  toast.innerHTML = 
+    '<div class="d-flex">' +
+      '<div class="toast-body">' +
+        '<i class="bi bi-' + iconClass + ' me-2"></i>' +
+        msg +
+      '</div>' +
+      '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>' +
+    '</div>';
+  
+  toastContainer.appendChild(toast);
+  
+  // Check if bootstrap is available
+  if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+    var bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+  } else {
+    // Fallback: show toast manually
+    toast.style.display = 'block';
+    setTimeout(function() {
+      toast.style.display = 'none';
+      toast.remove();
+    }, 3000);
+  }
+  
+  toast.addEventListener('hidden.bs.toast', function() {
+    toast.remove();
+  });
+}
+
+function createToastContainer() {
+  var container = document.createElement('div');
+  container.className = 'toast-container position-fixed top-0 end-0 p-3';
+  container.style.zIndex = '1100';
+  document.body.appendChild(container);
+  return container;
+}
+</script>
+{% endblock %}
